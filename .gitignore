@@ -1,0 +1,11 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente (qualquer arquivo env, inclusive .env.example / .env-example)
+.env
+.env.*
+.env-*
+*.env
+
+# Zip de referência do Alô Delivery (não versionar código de outro projeto)
+alo-delivery-saas.zip

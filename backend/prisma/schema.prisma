@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =========================================================
+// ENUMS
+// =========================================================
+
+enum Role {
+  store_owner
+  store_staff
+}
+
+enum AppointmentStatus {
+  agendado
+  confirmado
+  concluido
+  cancelado
+  nao_compareceu
+}
+
+enum CanceledBy {
+  customer
+  store
+}
+
+enum SubscriptionStatus {
+  trial
+  active
+  overdue
+  canceled
+}
+
+// =========================================================
+// TENANT — cada barbearia
+// =========================================================
+
+model Tenant {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  phone         String?
+  description   String?
+  address       String?
+  city          String?
+  instagramUrl  String?  @map("instagram_url")
+  logoUrl       String?  @map("logo_url")
+  bannerUrl     String?  @map("banner_url")
+  faviconUrl    String?  @map("favicon_url")
+  // Fuso da barbearia: o expediente ("09:00") é horário de parede, então o
+  // motor de disponibilidade precisa dele pra converter em instantes UTC.
+  timezone      String   @default("America/Sao_Paulo")
+  // Horário de funcionamento exibido na página pública (informativo). A agenda
+  // real de cada profissional vem de WorkingHours.
+  businessHours Json?    @map("business_hours")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  users         User[]
+  professionals Professional[]
+  services      Service[]
+  appointments  Appointment[]
+  customers     Customer[]
+  subscription  Subscription?
+
+  @@map("tenants")
+}
+
+// =========================================================
+// SUBSCRIPTION — assinatura da barbearia na plataforma. Nasce junto com o
+// tenant (RegisterTenantService), sempre em "trial".
+// =========================================================
+
+model Subscription {
+  id           String             @id @default(uuid())
+  tenantId     String             @unique @map("tenant_id")
+  planName     String             @map("plan_name")
+  monthlyPrice Int                @map("monthly_price") // centavos
+  status       SubscriptionStatus @default(trial)
+  startedAt    DateTime           @default(now()) @map("started_at")
+  canceledAt   DateTime?          @map("canceled_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// =========================================================
+// USER — quem acessa o painel (dono ou funcionário da barbearia)
+// =========================================================
+
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String   @map("tenant_id")
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(store_staff)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+// =========================================================
+// PROFESSIONAL — o barbeiro que atende. Na v1 é só um cadastro gerenciado
+// pelo dono (não tem login próprio, não é um User).
+// =========================================================
+
+model Professional {
+  id        String   @id @default(uuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  photoUrl  String?  @map("photo_url")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workingHours WorkingHours[]
+  appointments Appointment[]
+
+  @@index([tenantId])
+  @@map("professionals")
+}
+
+// =========================================================
+// SERVICE — o serviço oferecido (corte, barba, combo). durationMinutes
+// define o tamanho do slot na agenda. Na v1 todo profissional faz todo
+// serviço (sem N:N ainda).
+// =========================================================
+
+model Service {
+  id              String   @id @default(uuid())
+  tenantId        String   @map("tenant_id")
+  name            String
+  description     String?
+  durationMinutes Int      @map("duration_minutes")
+  price           Int // centavos
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@index([tenantId])
+  @@map("services")
+}
+
+// =========================================================
+// WORKING HOURS — expediente semanal do profissional. Um profissional pode
+// ter mais de um intervalo no mesmo dia (ex: 09:00–12:00 e 13:00–18:00, o que
+// representa a pausa de almoço). Horários em "HH:mm", no fuso do tenant.
+// =========================================================
+
+model WorkingHours {
+  id             String @id @default(uuid())
+  professionalId String @map("professional_id")
+  dayOfWeek      Int    @map("day_of_week") // 0 = domingo … 6 = sábado (mesma convenção do Date.getDay)
+  startTime      String @map("start_time") // "HH:mm"
+  endTime        String @map("end_time") // "HH:mm"
+
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([professionalId, dayOfWeek])
+  @@map("working_hours")
+}
+
+// =========================================================
+// CUSTOMER — conta opcional do cliente final (login não é obrigatório pra
+// agendar; quem não cria conta agenda como convidado, com nome+telefone no
+// próprio Appointment). Conta por barbearia, igual ao Alô Delivery.
+// =========================================================
+
+model Customer {
+  id           String   @id @default(uuid())
+  tenantId     String   @map("tenant_id")
+  name         String
+  phone        String
+  email        String?
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@unique([tenantId, phone])
+  @@index([tenantId])
+  @@map("customers")
+}
+
+// =========================================================
+// APPOINTMENT — o agendamento. endsAt = scheduledAt + duração do serviço no
+// momento da marcação; price é congelado aqui (mesmo princípio do unitPrice
+// do OrderItem) pra que mudar o preço do serviço não reescreva o histórico
+// nem o faturamento.
+// =========================================================
+
+model Appointment {
+  id             String            @id @default(uuid())
+  tenantId       String            @map("tenant_id")
+  professionalId String            @map("professional_id")
+  serviceId      String            @map("service_id")
+  customerId     String?           @map("customer_id")
+  customerName   String            @map("customer_name")
+  customerPhone  String            @map("customer_phone")
+  // timestamptz (e não o timestamp "puro" do Prisma) porque a Fase 2 vai proteger
+  // contra agendamento duplo direto no banco, com uma exclusion constraint sobre
+  // o intervalo [scheduledAt, endsAt) — e isso exige instantes sem ambiguidade de fuso.
+  scheduledAt    DateTime          @map("scheduled_at") @db.Timestamptz(3)
+  endsAt         DateTime          @map("ends_at") @db.Timestamptz(3)
+  price          Int // centavos, travado no momento da marcação
+  status         AppointmentStatus @default(agendado)
+  cancelReason   String?           @map("cancel_reason")
+  canceledBy     CanceledBy?       @map("canceled_by")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  professional Professional @relation(fields: [professionalId], references: [id])
+  service      Service      @relation(fields: [serviceId], references: [id])
+  customer     Customer?    @relation(fields: [customerId], references: [id])
+
+  @@index([tenantId, scheduledAt])
+  @@index([professionalId, scheduledAt])
+  @@index([tenantId, status])
+  @@map("appointments")
+}
