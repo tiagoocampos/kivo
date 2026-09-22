@@ -26,3 +26,13 @@ export class AppointmentCannotBeCanceledError extends AppError {
         Object.setPrototypeOf(this, AppointmentCannotBeCanceledError.prototype);
     }
 }
+
+// Transição de status fora da máquina de estados (ver utils/appointmentStatus.ts)
+// — ex: tentar "concluir" um agendamento que ainda nem foi confirmado.
+export class InvalidAppointmentStatusTransitionError extends AppError {
+    constructor(from: string, to: string) {
+        super(`Não é possível mudar o status de "${from}" para "${to}"`, 400);
+        this.name = "InvalidAppointmentStatusTransitionError";
+        Object.setPrototypeOf(this, InvalidAppointmentStatusTransitionError.prototype);
+    }
+}

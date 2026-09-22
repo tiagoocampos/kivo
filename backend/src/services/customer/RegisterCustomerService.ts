@@ -33,30 +33,39 @@ class RegisterCustomerService {
                     phone
                 }
             },
-            select: { id: true }
+            select: { id: true, passwordHash: true }
         });
 
-        if (existingCustomer) {
+        // Já existe um registro sem senha (nasceu de um agendamento como
+        // convidado): "adota" esse registro em vez de recusar o cadastro —
+        // pro cliente, é a primeira vez que ele está criando uma conta.
+        if (existingCustomer && existingCustomer.passwordHash !== null) {
             throw new CustomerAlreadyExistsError();
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
 
-        const customer = await prismaClient.customer.create({
-            data: {
-                tenantId: tenant.id,
-                name,
-                phone,
-                email: email ?? null,
-                passwordHash
-            },
-            select: {
-                id: true,
-                name: true,
-                phone: true,
-                email: true
-            }
-        });
+        const customer = existingCustomer
+            ? await prismaClient.customer.update({
+                where: { id: existingCustomer.id },
+                data: { name, email: email ?? null, passwordHash },
+                select: { id: true, name: true, phone: true, email: true }
+            })
+            : await prismaClient.customer.create({
+                data: {
+                    tenantId: tenant.id,
+                    name,
+                    phone,
+                    email: email ?? null,
+                    passwordHash
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                    email: true
+                }
+            });
 
         // type: "customer" separa este token do de dono/funcionário (type: "store_user").
         const token = jwt.sign({

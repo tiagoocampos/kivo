@@ -26,3 +26,4 @@ export class CustomerTenantMismatchError extends AppError {
         Object.setPrototypeOf(this, CustomerTenantMismatchError.prototype);
     }
 }
+

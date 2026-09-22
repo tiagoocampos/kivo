@@ -44,3 +44,11 @@ export const cancelCustomerAppointmentSchema =
             reason: z.string().trim().min(1, { message: "Informe o motivo do cancelamento" }).max(500, { message: "Motivo muito longo" }),
         })
     })
+
+// Painel da loja — sem slugParam (tenantId vem do JWT, não da URL).
+export const getCustomerAppointmentsSchema =
+    z.object({
+        params: z.object({
+            id: z.string().uuid({ message: "Cliente inválido" }),
+        })
+    })

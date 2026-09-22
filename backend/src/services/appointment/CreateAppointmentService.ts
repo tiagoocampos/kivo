@@ -100,6 +100,26 @@ class CreateAppointmentService {
         const endsAt = new Date(scheduledAt.getTime() + service.durationMinutes * 60_000);
         const normalizedPhone = normalizePhone(customerPhone);
 
+        // Convidado (sem customerAuth) também vira um Customer, sem senha —
+        // é assim que ele aparece na tela de Clientes do painel. Se já
+        // existir um registro pra esse telefone (de outro agendamento ou de
+        // uma conta de verdade), só reaproveita o id.
+        const customerId = customerAuth
+            ? customerAuth.customerId
+            : (
+                await prismaClient.customer.upsert({
+                    where: { tenantId_phone: { tenantId: tenant.id, phone: normalizedPhone } },
+                    update: { name: customerName },
+                    create: {
+                        tenantId: tenant.id,
+                        name: customerName,
+                        phone: normalizedPhone,
+                        passwordHash: null
+                    },
+                    select: { id: true }
+                })
+            ).id;
+
         try {
             return await prismaClient.$transaction(
                 async (tx) => {
@@ -134,7 +154,7 @@ class CreateAppointmentService {
                             tenantId: tenant.id,
                             professionalId: chosenId,
                             serviceId: service.id,
-                            customerId: customerAuth?.customerId ?? null,
+                            customerId,
                             customerName,
                             customerPhone: normalizedPhone,
                             scheduledAt,

@@ -14,6 +14,7 @@ import { authRateLimiter, availabilityRateLimiter, publicBookingRateLimiter } fr
 import { RegisterTenantController } from "./controllers/tenant/RegisterTenantController.js";
 import { LoginTenantController } from "./controllers/tenant/LoginTenantController.js";
 import { GetMyTenantController } from "./controllers/tenant/GetMyTenantController.js";
+import { UpdateMyTenantController } from "./controllers/tenant/UpdateMyTenantController.js";
 import { CreateProfessionalController } from "./controllers/professional/CreateProfessionalController.js";
 import { ListProfessionalsController } from "./controllers/professional/ListProfessionalsController.js";
 import { UpdateProfessionalController } from "./controllers/professional/UpdateProfessionalController.js";
@@ -26,13 +27,22 @@ import { DeleteServiceController } from "./controllers/service/DeleteServiceCont
 import { GetPublicBookingController } from "./controllers/booking/GetPublicBookingController.js";
 import { GetAvailableSlotsController } from "./controllers/availability/GetAvailableSlotsController.js";
 import { CreateAppointmentController } from "./controllers/appointment/CreateAppointmentController.js";
+import { ListAppointmentsController } from "./controllers/appointment/ListAppointmentsController.js";
+import { UpdateAppointmentStatusController } from "./controllers/appointment/UpdateAppointmentStatusController.js";
+import { CancelAppointmentByStoreController } from "./controllers/appointment/CancelAppointmentByStoreController.js";
 import { RegisterCustomerController } from "./controllers/customer/RegisterCustomerController.js";
 import { LoginCustomerController } from "./controllers/customer/LoginCustomerController.js";
 import { GetCustomerMeController } from "./controllers/customer/GetCustomerMeController.js";
 import { ListCustomerAppointmentsController } from "./controllers/customer/ListCustomerAppointmentsController.js";
 import { CancelCustomerAppointmentController } from "./controllers/customer/CancelCustomerAppointmentController.js";
+import { ListCustomersController } from "./controllers/customer/ListCustomersController.js";
+import { GetCustomerAppointmentsController } from "./controllers/customer/GetCustomerAppointmentsController.js";
+import { GetDashboardSummaryController } from "./controllers/dashboard/GetDashboardSummaryController.js";
+import { GetDashboardRevenueController } from "./controllers/dashboard/GetDashboardRevenueController.js";
+import { ForgotPasswordController } from "./controllers/auth/ForgotPasswordController.js";
+import { ResetPasswordController } from "./controllers/auth/ResetPasswordController.js";
 
-import { registerTenantSchema } from "./schemas/tenantSchema.js";
+import { registerTenantSchema, updateMyTenantSchema } from "./schemas/tenantSchema.js";
 import { loginSchema } from "./schemas/loginShema.js";
 import {
     createProfessionalSchema,
@@ -55,8 +65,16 @@ import {
     loginCustomerSchema,
     getCustomerMeSchema,
     listCustomerAppointmentsSchema,
-    cancelCustomerAppointmentSchema
+    cancelCustomerAppointmentSchema,
+    getCustomerAppointmentsSchema
 } from "./schemas/customerSchema.js";
+import {
+    listAppointmentsSchema,
+    updateAppointmentStatusSchema,
+    cancelAppointmentByStoreSchema
+} from "./schemas/appointmentSchema.js";
+import { getDashboardRevenueSchema } from "./schemas/dashboardSchema.js";
+import { forgotPasswordSchema, resetPasswordSchema } from "./schemas/authSchema.js";
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -66,11 +84,27 @@ const upload = multer(uploadConfig);
  * ------------------------------------------------------------------------ */
 router.post("/register", authRateLimiter, validateSchema(registerTenantSchema), new RegisterTenantController().handle);
 router.post("/login", authRateLimiter, validateSchema(loginSchema), new LoginTenantController().handle);
+router.post("/auth/forgot-password", authRateLimiter, validateSchema(forgotPasswordSchema), new ForgotPasswordController().handle);
+router.post("/auth/reset-password", validateSchema(resetPasswordSchema), new ResetPasswordController().handle);
 
 /* ---------------------------------------------------------------------------
  * Painel da barbearia — tenantId sempre vem do JWT (req.auth), nunca da request
  * ------------------------------------------------------------------------ */
 router.get("/tenant/me", authenticate, requireTenant, requireActiveSubscription, new GetMyTenantController().handle);
+router.put(
+    "/tenant/me",
+    authenticate,
+    requireTenant,
+    requireActiveSubscription,
+    authorize("store_owner"),
+    upload.fields([
+        { name: "logo", maxCount: 1 },
+        { name: "banner", maxCount: 1 },
+        { name: "favicon", maxCount: 1 }
+    ]),
+    validateSchema(updateMyTenantSchema),
+    new UpdateMyTenantController().handle
+);
 
 router.post("/professionals", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), upload.single("photo"), validateSchema(createProfessionalSchema), new CreateProfessionalController().handle);
 router.get("/professionals", authenticate, requireTenant, requireActiveSubscription, new ListProfessionalsController().handle);
@@ -82,6 +116,16 @@ router.post("/services", authenticate, requireTenant, requireActiveSubscription,
 router.get("/services", authenticate, requireTenant, requireActiveSubscription, new ListServicesController().handle);
 router.put("/services/:id", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), validateSchema(updateServiceSchema), new UpdateServiceController().handle);
 router.delete("/services/:id", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), validateSchema(deleteServiceSchema), new DeleteServiceController().handle);
+
+router.get("/appointments", authenticate, requireTenant, requireActiveSubscription, validateSchema(listAppointmentsSchema), new ListAppointmentsController().handle);
+router.patch("/appointments/:id/status", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner", "store_staff"), validateSchema(updateAppointmentStatusSchema), new UpdateAppointmentStatusController().handle);
+router.patch("/appointments/:id/cancel", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner", "store_staff"), validateSchema(cancelAppointmentByStoreSchema), new CancelAppointmentByStoreController().handle);
+
+router.get("/customers", authenticate, requireTenant, requireActiveSubscription, new ListCustomersController().handle);
+router.get("/customers/:id/appointments", authenticate, requireTenant, requireActiveSubscription, validateSchema(getCustomerAppointmentsSchema), new GetCustomerAppointmentsController().handle);
+
+router.get("/dashboard/summary", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), new GetDashboardSummaryController().handle);
+router.get("/dashboard/revenue", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), validateSchema(getDashboardRevenueSchema), new GetDashboardRevenueController().handle);
 
 /* ---------------------------------------------------------------------------
  * Fluxo público de agendamento (cliente final, sem login) — barbearia

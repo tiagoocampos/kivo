@@ -15,3 +15,13 @@ export class TenantRequiredError extends AppError {
         Object.setPrototypeOf(this, TenantRequiredError.prototype);
     }
 }
+
+// Token de redefinição de senha inexistente ou expirado (TTL de 1h) — mesma
+// mensagem pros dois casos, não precisa distinguir pro usuário.
+export class InvalidResetTokenError extends AppError {
+    constructor() {
+        super("Link inválido ou expirado. Solicite um novo.", 400);
+        this.name = "InvalidResetTokenError";
+        Object.setPrototypeOf(this, InvalidResetTokenError.prototype);
+    }
+}

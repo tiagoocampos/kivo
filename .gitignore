@@ -9,3 +9,9 @@ node_modules/
 
 # Zip de referência do Alô Delivery (não versionar código de outro projeto)
 alo-delivery-saas.zip
+
+# Zip de referência do storefront do Alô Delivery
+storefront.zip
+
+# Zip de referência do painel do Alô Delivery
+alo-delivery-painel.zip

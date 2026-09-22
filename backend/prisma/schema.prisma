@@ -108,10 +108,29 @@ model User {
   isActive     Boolean  @default(true) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  passwordResetTokens PasswordResetToken[]
 
   @@index([tenantId])
   @@map("users")
+}
+
+// =========================================================
+// PASSWORD RESET TOKEN — recuperação de senha do User (dono/funcionário da
+// barbearia). Não cobre o login de Customer (cliente final).
+// =========================================================
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 // =========================================================
@@ -191,7 +210,10 @@ model Customer {
   name         String
   phone        String
   email        String?
-  passwordHash String   @map("password_hash")
+  // Nulo pra cliente que só agendou como convidado (nunca criou senha). Vira
+  // uma conta de verdade quando ele se registra com esse mesmo telefone —
+  // RegisterCustomerService "adota" o registro em vez de recusar.
+  passwordHash String?  @map("password_hash")
   createdAt    DateTime @default(now()) @map("created_at")
 
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)

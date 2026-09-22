@@ -32,8 +32,10 @@ class LoginCustomerService {
         });
 
         // Senha errada devolve o mesmo erro de telefone inexistente, de
-        // propósito, pra não entregar quais telefones têm conta.
-        if (!customer) {
+        // propósito, pra não entregar quais telefones têm conta. Um
+        // registro sem senha (nasceu de agendamento como convidado, nunca
+        // virou conta) cai no mesmo caso — ele precisa se cadastrar primeiro.
+        if (!customer || customer.passwordHash === null) {
             throw new CustomerNotFoundError();
         }
 

@@ -1,7 +1,15 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { getZonedParts, isValidTimezone, zonedTimeToUtc } from "./timezone.js";
-import { addDays, getDayRangeInTimezone, isValidDateString, todayInTimezone, weekdayOf } from "./dateRange.js";
+import {
+    addDays,
+    getDayRangeInTimezone,
+    getMonthKeyInTimezone,
+    getMonthRangeInTimezone,
+    isValidDateString,
+    todayInTimezone,
+    weekdayOf
+} from "./dateRange.js";
 
 const SAO_PAULO = "America/Sao_Paulo"; // UTC-3, sem horário de verão
 const NEW_YORK = "America/New_York"; // tem horário de verão
@@ -93,5 +101,31 @@ describe("dateRange", () => {
     test("getDayRangeInTimezone: dia do salto do horário de verão tem 23h", () => {
         const { start, end } = getDayRangeInTimezone("2026-03-08", NEW_YORK);
         assert.equal((end.getTime() - start.getTime()) / 3_600_000, 23);
+    });
+
+    test("getMonthKeyInTimezone: 0 = mês atual, 1 = mês anterior, atravessando o ano", () => {
+        const now = new Date("2026-01-15T12:00:00Z"); // meio-dia UTC = meio-dia em São Paulo (mesma data)
+        assert.equal(getMonthKeyInTimezone(SAO_PAULO, 0, now), "2026-01");
+        assert.equal(getMonthKeyInTimezone(SAO_PAULO, 1, now), "2025-12");
+    });
+
+    test("getMonthKeyInTimezone usa o mês da barbearia, não o do servidor", () => {
+        // 02:00 UTC de 1/set = 23:00 de 31/ago em São Paulo — mês anterior lá.
+        const instant = new Date("2026-09-01T02:00:00Z");
+        assert.equal(getMonthKeyInTimezone(SAO_PAULO, 0, instant), "2026-08");
+        assert.equal(getMonthKeyInTimezone("UTC", 0, instant), "2026-09");
+    });
+
+    test("getMonthRangeInTimezone: mês de 30 dias em São Paulo", () => {
+        const { start, end } = getMonthRangeInTimezone("2026-09", SAO_PAULO);
+        assert.equal(start.toISOString(), "2026-09-01T03:00:00.000Z");
+        assert.equal(end.toISOString(), "2026-10-01T03:00:00.000Z");
+        assert.equal((end.getTime() - start.getTime()) / 86_400_000, 30);
+    });
+
+    test("getMonthRangeInTimezone atravessa o ano (dezembro -> janeiro)", () => {
+        const { start, end } = getMonthRangeInTimezone("2026-12", SAO_PAULO);
+        assert.equal(start.toISOString(), "2026-12-01T03:00:00.000Z");
+        assert.equal(end.toISOString(), "2027-01-01T03:00:00.000Z");
     });
 });

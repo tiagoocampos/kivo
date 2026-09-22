@@ -55,3 +55,29 @@ export function getDayRangeInTimezone(date: string, timezone: string): { start: 
 
     return { start, end };
 }
+
+// "YYYY-MM" do mês civil (fuso da barbearia) `monthsAgo` meses antes do mês
+// atual (0 = mês atual, 1 = mês anterior). Usado pelo dashboard pra comparar
+// mês atual x anterior sem depender do fuso do servidor.
+export function getMonthKeyInTimezone(timezone: string, monthsAgo: number, now: Date = new Date()): string {
+    const [year, month] = todayInTimezone(timezone, now).split("-").map(Number);
+    const totalMonths = year! * 12 + (month! - 1) - monthsAgo;
+    const normalizedYear = Math.floor(totalMonths / 12);
+    const normalizedMonth = ((totalMonths % 12) + 12) % 12;
+
+    return `${normalizedYear}-${String(normalizedMonth + 1).padStart(2, "0")}`;
+}
+
+// Intervalo UTC [start, end) exato de um mês civil no fuso, a partir de "YYYY-MM".
+export function getMonthRangeInTimezone(monthKey: string, timezone: string): { start: Date; end: Date } {
+    const [year, month] = monthKey.split("-").map(Number);
+    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+    const nextMonth = month === 12 ? 1 : month! + 1;
+    const nextYear = month === 12 ? year! + 1 : year;
+    const nextMonthStart = `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
+
+    const { start } = getDayRangeInTimezone(startDate, timezone);
+    const { start: end } = getDayRangeInTimezone(nextMonthStart, timezone);
+
+    return { start, end };
+}
