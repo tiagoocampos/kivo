@@ -41,26 +41,29 @@ enum SubscriptionStatus {
 // =========================================================
 
 model Tenant {
-  id            String   @id @default(uuid())
-  name          String
-  slug          String   @unique
-  phone         String?
-  description   String?
-  address       String?
-  city          String?
-  instagramUrl  String?  @map("instagram_url")
-  logoUrl       String?  @map("logo_url")
-  bannerUrl     String?  @map("banner_url")
-  faviconUrl    String?  @map("favicon_url")
+  id                   String   @id @default(uuid())
+  name                 String
+  slug                 String   @unique
+  phone                String?
+  description          String?
+  address              String?
+  city                 String?
+  instagramUrl         String?  @map("instagram_url")
+  logoUrl              String?  @map("logo_url")
+  bannerUrl            String?  @map("banner_url")
+  faviconUrl           String?  @map("favicon_url")
   // Fuso da barbearia: o expediente ("09:00") é horário de parede, então o
   // motor de disponibilidade precisa dele pra converter em instantes UTC.
-  timezone      String   @default("America/Sao_Paulo")
+  timezone             String   @default("America/Sao_Paulo")
   // Horário de funcionamento exibido na página pública (informativo). A agenda
   // real de cada profissional vem de WorkingHours.
-  businessHours Json?    @map("business_hours")
-  isActive      Boolean  @default(true) @map("is_active")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  businessHours        Json?    @map("business_hours")
+  // Antecedência mínima (em horas) pro cliente cancelar pelo app: faltando menos
+  // que isso pro horário marcado, só falando com a barbearia.
+  minCancelHoursBefore Int      @default(2) @map("min_cancel_hours_before")
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   users         User[]
   professionals Professional[]

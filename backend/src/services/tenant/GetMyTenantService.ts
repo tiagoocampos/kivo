@@ -27,6 +27,10 @@ class GetMyTenantService {
                 faviconUrl: true,
                 timezone: true,
                 businessHours: true,
+                // Já existe na tabela desde a fase de agendamento (usado por
+                // CancelCustomerAppointmentService), mas nunca tinha sido exposto pro
+                // próprio painel conseguir ler/exibir o valor atual.
+                minCancelHoursBefore: true,
                 isActive: true,
                 createdAt: true,
                 updatedAt: true,

@@ -4,10 +4,12 @@ import uploadConfig from "./config/multer.js";
 
 import { validateSchema } from "./middlewares/ValidateSchema.js";
 import { authenticate } from "./middlewares/Authenticate.js";
+import { authenticateCustomer } from "./middlewares/AuthenticateCustomer.js";
+import { optionalAuthenticateCustomer } from "./middlewares/OptionalAuthenticateCustomer.js";
 import { requireTenant } from "./middlewares/RequireTenant.js";
 import { requireActiveSubscription } from "./middlewares/RequireActiveSubscription.js";
 import { authorize } from "./middlewares/Authorize.js";
-import { authRateLimiter } from "./middlewares/RateLimit.js";
+import { authRateLimiter, availabilityRateLimiter, publicBookingRateLimiter } from "./middlewares/RateLimit.js";
 
 import { RegisterTenantController } from "./controllers/tenant/RegisterTenantController.js";
 import { LoginTenantController } from "./controllers/tenant/LoginTenantController.js";
@@ -21,6 +23,14 @@ import { CreateServiceController } from "./controllers/service/CreateServiceCont
 import { ListServicesController } from "./controllers/service/ListServicesController.js";
 import { UpdateServiceController } from "./controllers/service/UpdateServiceController.js";
 import { DeleteServiceController } from "./controllers/service/DeleteServiceController.js";
+import { GetPublicBookingController } from "./controllers/booking/GetPublicBookingController.js";
+import { GetAvailableSlotsController } from "./controllers/availability/GetAvailableSlotsController.js";
+import { CreateAppointmentController } from "./controllers/appointment/CreateAppointmentController.js";
+import { RegisterCustomerController } from "./controllers/customer/RegisterCustomerController.js";
+import { LoginCustomerController } from "./controllers/customer/LoginCustomerController.js";
+import { GetCustomerMeController } from "./controllers/customer/GetCustomerMeController.js";
+import { ListCustomerAppointmentsController } from "./controllers/customer/ListCustomerAppointmentsController.js";
+import { CancelCustomerAppointmentController } from "./controllers/customer/CancelCustomerAppointmentController.js";
 
 import { registerTenantSchema } from "./schemas/tenantSchema.js";
 import { loginSchema } from "./schemas/loginShema.js";
@@ -35,6 +45,18 @@ import {
     updateServiceSchema,
     deleteServiceSchema
 } from "./schemas/serviceSchema.js";
+import {
+    getPublicBookingSchema,
+    getAvailabilitySchema,
+    createAppointmentSchema
+} from "./schemas/bookingSchema.js";
+import {
+    registerCustomerSchema,
+    loginCustomerSchema,
+    getCustomerMeSchema,
+    listCustomerAppointmentsSchema,
+    cancelCustomerAppointmentSchema
+} from "./schemas/customerSchema.js";
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -60,5 +82,30 @@ router.post("/services", authenticate, requireTenant, requireActiveSubscription,
 router.get("/services", authenticate, requireTenant, requireActiveSubscription, new ListServicesController().handle);
 router.put("/services/:id", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), validateSchema(updateServiceSchema), new UpdateServiceController().handle);
 router.delete("/services/:id", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), validateSchema(deleteServiceSchema), new DeleteServiceController().handle);
+
+/* ---------------------------------------------------------------------------
+ * Fluxo público de agendamento (cliente final, sem login) — barbearia
+ * identificada pelo slug, nunca por id vindo do corpo/query da requisição
+ * ------------------------------------------------------------------------ */
+router.get("/booking/:slug", validateSchema(getPublicBookingSchema), new GetPublicBookingController().handle);
+router.get("/booking/:slug/availability", availabilityRateLimiter, validateSchema(getAvailabilitySchema), new GetAvailableSlotsController().handle);
+router.post(
+    "/booking/:slug/appointments",
+    publicBookingRateLimiter,
+    optionalAuthenticateCustomer,
+    validateSchema(createAppointmentSchema),
+    new CreateAppointmentController().handle
+);
+
+/* ---------------------------------------------------------------------------
+ * Conta do cliente final — login opcional. Convidado continua agendando sem
+ * conta; quem quiser pode se cadastrar e logar pra ver/cancelar pelo app.
+ * Barbearia sempre resolvida pelo slug da URL.
+ * ------------------------------------------------------------------------ */
+router.post("/booking/:slug/customer/register", authRateLimiter, validateSchema(registerCustomerSchema), new RegisterCustomerController().handle);
+router.post("/booking/:slug/customer/login", authRateLimiter, validateSchema(loginCustomerSchema), new LoginCustomerController().handle);
+router.get("/booking/:slug/customer/me", authenticateCustomer, validateSchema(getCustomerMeSchema), new GetCustomerMeController().handle);
+router.get("/booking/:slug/customer/appointments", authenticateCustomer, validateSchema(listCustomerAppointmentsSchema), new ListCustomerAppointmentsController().handle);
+router.patch("/booking/:slug/customer/appointments/:id/cancel", authenticateCustomer, validateSchema(cancelCustomerAppointmentSchema), new CancelCustomerAppointmentController().handle);
 
 export { router };
