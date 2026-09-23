@@ -64,36 +64,28 @@ class GetAvailableSlotsService {
                 throw new ProfessionalNotFoundError();
             }
 
-            return {
-                professionalId: professional.id,
-                slots: await slotsFor(professional.id)
-            };
+            return slotsFor(professional.id);
         }
 
-        // "Qualquer profissional": o cálculo de cada um, separado — quem consome
-        // decide como juntar/exibir.
+        // "Qualquer profissional": união dos horários livres de todos, sem
+        // repetir — pro storefront é só uma lista de "HH:mm" pra escolher,
+        // sem se importar com quem vai atender (o backend decide isso na hora
+        // de criar o agendamento).
         const professionals = await prismaClient.professional.findMany({
             where: {
                 tenantId: tenant.id,
                 isActive: true
             },
-            orderBy: [
-                { name: "asc" },
-                { id: "asc" }
-            ],
             select: {
-                id: true,
-                name: true
+                id: true
             }
         });
 
-        return Promise.all(
-            professionals.map(async (professional) => ({
-                professionalId: professional.id,
-                professionalName: professional.name,
-                slots: await slotsFor(professional.id)
-            }))
+        const slotsByProfessional = await Promise.all(
+            professionals.map((professional) => slotsFor(professional.id))
         );
+
+        return [...new Set(slotsByProfessional.flat())].sort();
     }
 }
 
