@@ -1,6 +1,7 @@
 import { CheckCircle2, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { NotificationOptIn } from "@/components/NotificationOptIn"
 import { formatLongDate, getZonedParts } from "@/lib/dates"
 import { formatCents, formatDuration } from "@/lib/money"
 import { getCancellationPolicyText } from "@/lib/bookingPolicy"
@@ -9,6 +10,7 @@ import type { Appointment, Tenant } from "@/types"
 interface AppointmentConfirmationProps {
   appointment: Appointment
   tenant: Tenant
+  slug: string
   isAuthenticated: boolean
   onNewBooking: () => void
   onOpenAppointments: () => void
@@ -17,6 +19,7 @@ interface AppointmentConfirmationProps {
 export function AppointmentConfirmation({
   appointment,
   tenant,
+  slug,
   isAuthenticated,
   onNewBooking,
   onOpenAppointments,
@@ -63,6 +66,8 @@ export function AppointmentConfirmation({
       <p className="rounded-xl bg-muted p-3 text-xs text-muted-foreground">
         {getCancellationPolicyText(isAuthenticated)}
       </p>
+
+      <NotificationOptIn slug={slug} appointmentId={appointment.id} />
 
       {tenant.phone && (
         <Button asChild variant="secondary" size="lg" className="w-full">

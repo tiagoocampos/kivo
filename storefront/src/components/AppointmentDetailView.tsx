@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { NotificationOptIn } from "@/components/NotificationOptIn"
 import { formatLongDate, getZonedParts } from "@/lib/dates"
 import { formatCents, formatDuration } from "@/lib/money"
 import {
@@ -11,6 +12,7 @@ import {
   getAppointmentStatusClass,
   getAppointmentStatusLabel,
   getCanceledByLabel,
+  isUpcomingStatus,
 } from "@/lib/appointmentStatus"
 import { cancelCustomerAppointment } from "@/services/customer"
 import type { Appointment } from "@/types"
@@ -75,6 +77,8 @@ export function AppointmentDetailView({ appointment, slug, timezone, onAppointme
           <span className="text-foreground">{formatCents(appointment.price)}</span>
         </div>
       </div>
+
+      {isUpcomingStatus(appointment.status) && <NotificationOptIn slug={slug} appointmentId={appointment.id} />}
 
       {appointment.status === "cancelado" && appointment.canceledBy && (
         <div className="flex flex-col gap-1 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">

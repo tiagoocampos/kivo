@@ -205,6 +205,7 @@ function BookingContent({ slug }: { slug: string }) {
         <AppointmentConfirmation
           appointment={completed}
           tenant={tenant}
+          slug={slug}
           isAuthenticated={isAuthenticated}
           onNewBooking={() => setCompleted(null)}
           onOpenAppointments={() => setAppointmentsOpen(true)}

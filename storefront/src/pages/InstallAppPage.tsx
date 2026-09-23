@@ -10,13 +10,8 @@ import { applyTenantManifest } from "@/lib/pwaManifest"
 import { useInstallPrompt } from "@/hooks/useInstallPrompt"
 import { getErrorStatus } from "@/services/api"
 import { getBooking } from "@/services/booking"
+import { isIOS, isStandalone } from "@/lib/device"
 import type { Tenant } from "@/types"
-
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-
-function isStandalone() {
-  return window.matchMedia("(display-mode: standalone)").matches
-}
 
 export function InstallAppPage() {
   const { slug } = useParams<{ slug: string }>()
