@@ -155,4 +155,21 @@
   --landing-muted: #b7ab9a;
   --landing-accent: #d99a2b;
   --landing-accent-foreground: #1a1206;
+  /* Amber mais forte, só pro título de destaque ("AGENDE SEU") — o accent
+   * padrão fica claro demais sobre o fundo escuro texturizado da capa. */
+  --landing-accent-strong: #e08a1f;
+  /* Textura de ruído sutil (SVG de fractalNoise), usada como background-image
+   * pra tirar o preto chapado da capa sem precisar de um asset de imagem. */
+  --landing-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.tenant-landing-noise {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--landing-noise);
+  background-size: 180px 180px;
+  opacity: 0.22;
+  mix-blend-mode: overlay;
 }
