@@ -141,3 +141,18 @@
     @apply font-sans;
     }
 }
+
+/*
+ * Paleta da landing pública de cada barbearia (/:slug) — proposital e
+ * diferente do tema institucional do KirvoAgenda acima: base escura/editorial
+ * (moldura neutra pra qualquer logo/banner que a barbearia suba) + um accent
+ * âmbar próprio, usado só dentro do escopo .tenant-landing.
+ */
+.tenant-landing {
+  --landing-bg: #17130f;
+  --landing-bg-elevated: #221b14;
+  --landing-foreground: #f6f1e8;
+  --landing-muted: #b7ab9a;
+  --landing-accent: #d99a2b;
+  --landing-accent-foreground: #1a1206;
+}

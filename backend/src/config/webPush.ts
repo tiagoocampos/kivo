@@ -1,0 +1,10 @@
+import webpush from "web-push";
+import "dotenv/config";
+
+webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT as string,
+    process.env.VAPID_PUBLIC_KEY as string,
+    process.env.VAPID_PRIVATE_KEY as string
+);
+
+export default webpush;

@@ -4,6 +4,8 @@ import {
 } from "../../errors/appointment/AppointmentErrors.js";
 import prismaClient from "../../prisma/index.js";
 import { canTransitionTo } from "../../utils/appointmentStatus.js";
+import { getZonedParts } from "../../utils/timezone.js";
+import { notifyAppointmentCustomer } from "../push/notifyPush.js";
 import { APPOINTMENT_SELECT } from "./appointmentSelect.js";
 import type { AppointmentStatus } from "../../generated/prisma/enums.js";
 
@@ -35,7 +37,7 @@ class UpdateAppointmentStatusService {
             throw new InvalidAppointmentStatusTransitionError(appointment.status, status);
         }
 
-        return prismaClient.appointment.update({
+        const updated = await prismaClient.appointment.update({
             where: {
                 id: appointment.id
             },
@@ -44,6 +46,30 @@ class UpdateAppointmentStatusService {
             },
             select: APPOINTMENT_SELECT
         });
+
+        // Push best-effort: nunca pode derrubar a resposta da mudança de status
+        // que já aconteceu de verdade no banco.
+        if (status === "confirmado") {
+            try {
+                const tenant = await prismaClient.tenant.findUnique({
+                    where: { id: tenantId },
+                    select: { timezone: true }
+                });
+
+                if (tenant) {
+                    const { time } = getZonedParts(updated.scheduledAt, tenant.timezone);
+
+                    await notifyAppointmentCustomer(updated.id, {
+                        title: "Agendamento confirmado",
+                        body: `Seu agendamento foi confirmado! ${updated.service.name} às ${time} com ${updated.professional.name}.`
+                    });
+                }
+            } catch {
+                // silencioso, de propósito.
+            }
+        }
+
+        return updated;
     }
 }
 

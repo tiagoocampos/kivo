@@ -28,6 +28,7 @@ import { GetPublicBookingController } from "./controllers/booking/GetPublicBooki
 import { GetAvailableSlotsController } from "./controllers/availability/GetAvailableSlotsController.js";
 import { CreateAppointmentController } from "./controllers/appointment/CreateAppointmentController.js";
 import { ListAppointmentsController } from "./controllers/appointment/ListAppointmentsController.js";
+import { GetAppointmentController } from "./controllers/appointment/GetAppointmentController.js";
 import { UpdateAppointmentStatusController } from "./controllers/appointment/UpdateAppointmentStatusController.js";
 import { CancelAppointmentByStoreController } from "./controllers/appointment/CancelAppointmentByStoreController.js";
 import { RegisterCustomerController } from "./controllers/customer/RegisterCustomerController.js";
@@ -41,6 +42,12 @@ import { GetDashboardSummaryController } from "./controllers/dashboard/GetDashbo
 import { GetDashboardRevenueController } from "./controllers/dashboard/GetDashboardRevenueController.js";
 import { ForgotPasswordController } from "./controllers/auth/ForgotPasswordController.js";
 import { ResetPasswordController } from "./controllers/auth/ResetPasswordController.js";
+import { GetVapidPublicKeyController } from "./controllers/push/GetVapidPublicKeyController.js";
+import { SubscribeUserPushController } from "./controllers/push/SubscribeUserPushController.js";
+import { SubscribeAppointmentPushController } from "./controllers/appointment/SubscribeAppointmentPushController.js";
+import { ListNotificationsController } from "./controllers/notification/ListNotificationsController.js";
+import { GetUnreadNotificationCountController } from "./controllers/notification/GetUnreadNotificationCountController.js";
+import { MarkAllNotificationsReadController } from "./controllers/notification/MarkAllNotificationsReadController.js";
 
 import { registerTenantSchema, updateMyTenantSchema } from "./schemas/tenantSchema.js";
 import { loginSchema } from "./schemas/loginShema.js";
@@ -70,11 +77,14 @@ import {
 } from "./schemas/customerSchema.js";
 import {
     listAppointmentsSchema,
+    getAppointmentSchema,
     updateAppointmentStatusSchema,
     cancelAppointmentByStoreSchema
 } from "./schemas/appointmentSchema.js";
 import { getDashboardRevenueSchema } from "./schemas/dashboardSchema.js";
 import { forgotPasswordSchema, resetPasswordSchema } from "./schemas/authSchema.js";
+import { subscribeUserPushSchema, subscribeAppointmentPushSchema } from "./schemas/pushSchema.js";
+import { listNotificationsSchema } from "./schemas/notificationSchema.js";
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -118,6 +128,7 @@ router.put("/services/:id", authenticate, requireTenant, requireActiveSubscripti
 router.delete("/services/:id", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), validateSchema(deleteServiceSchema), new DeleteServiceController().handle);
 
 router.get("/appointments", authenticate, requireTenant, requireActiveSubscription, validateSchema(listAppointmentsSchema), new ListAppointmentsController().handle);
+router.get("/appointments/:id", authenticate, requireTenant, requireActiveSubscription, validateSchema(getAppointmentSchema), new GetAppointmentController().handle);
 router.patch("/appointments/:id/status", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner", "store_staff"), validateSchema(updateAppointmentStatusSchema), new UpdateAppointmentStatusController().handle);
 router.patch("/appointments/:id/cancel", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner", "store_staff"), validateSchema(cancelAppointmentByStoreSchema), new CancelAppointmentByStoreController().handle);
 
@@ -126,6 +137,21 @@ router.get("/customers/:id/appointments", authenticate, requireTenant, requireAc
 
 router.get("/dashboard/summary", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), new GetDashboardSummaryController().handle);
 router.get("/dashboard/revenue", authenticate, requireTenant, requireActiveSubscription, authorize("store_owner"), validateSchema(getDashboardRevenueSchema), new GetDashboardRevenueController().handle);
+
+/* ---------------------------------------------------------------------------
+ * Push — mesmas chaves VAPID pro painel (por usuário) e pro cliente final
+ * (por agendamento, seção pública mais abaixo).
+ * ------------------------------------------------------------------------ */
+router.get("/push/vapid-public-key", new GetVapidPublicKeyController().handle);
+router.post("/push/subscription", authenticate, requireTenant, requireActiveSubscription, validateSchema(subscribeUserPushSchema), new SubscribeUserPushController().handle);
+
+/* ---------------------------------------------------------------------------
+ * Notificações — feed de atividade do painel (sino), separado do
+ * PushSubscription: um é o histórico dentro do app, o outro é o push do SO.
+ * ------------------------------------------------------------------------ */
+router.get("/notifications", authenticate, requireTenant, requireActiveSubscription, validateSchema(listNotificationsSchema), new ListNotificationsController().handle);
+router.get("/notifications/unread-count", authenticate, requireTenant, requireActiveSubscription, new GetUnreadNotificationCountController().handle);
+router.patch("/notifications/read-all", authenticate, requireTenant, requireActiveSubscription, new MarkAllNotificationsReadController().handle);
 
 /* ---------------------------------------------------------------------------
  * Fluxo público de agendamento (cliente final, sem login) — barbearia
@@ -139,6 +165,11 @@ router.post(
     optionalAuthenticateCustomer,
     validateSchema(createAppointmentSchema),
     new CreateAppointmentController().handle
+);
+router.post(
+    "/booking/:slug/appointments/:id/push-subscription",
+    validateSchema(subscribeAppointmentPushSchema),
+    new SubscribeAppointmentPushController().handle
 );
 
 /* ---------------------------------------------------------------------------

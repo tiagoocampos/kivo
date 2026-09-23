@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { errorHandler } from "./middlewares/ErrorHandler.js";
 import { router } from "./routes.js";
+import { startAppointmentReminderJob } from "./jobs/appointmentReminderJob.js";
 
 const app = express();
 app.set("trust proxy", 1); // atrás do proxy do Railway — sem isso, o rate limiting derruba o backend
@@ -40,3 +41,5 @@ const PORT = process.env.PORT ?? 3333;
 app.listen(PORT, () => {
     console.log(`Server is running na port http://localhost:${PORT}`);
 })
+
+startAppointmentReminderJob();

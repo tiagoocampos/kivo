@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom"
 import { BookingPage } from "@/pages/BookingPage"
 import { InstallAppPage } from "@/pages/InstallAppPage"
+import { TenantLandingPage } from "@/pages/TenantLandingPage"
 import { NotFoundPage } from "@/pages/NotFoundPage"
 
 function App() {
@@ -16,7 +17,8 @@ function App() {
         }
       />
       <Route path="/:slug/instalar" element={<InstallAppPage />} />
-      <Route path="/:slug" element={<BookingPage />} />
+      <Route path="/:slug/agendar" element={<BookingPage />} />
+      <Route path="/:slug" element={<TenantLandingPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

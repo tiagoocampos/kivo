@@ -6,9 +6,10 @@ import { ServiceNotFoundError } from "../../errors/service/ServiceErrors.js";
 import { TenantInactiveError } from "../../errors/tenant/TenantErrors.js";
 import prismaClient from "../../prisma/index.js";
 import { normalizePhone } from "../../utils/phone.js";
-import { zonedTimeToUtc } from "../../utils/timezone.js";
+import { getZonedParts, zonedTimeToUtc } from "../../utils/timezone.js";
 import { resolveTenantOrThrow } from "../tenant/resolveTenantOrThrow.js";
 import { computeProfessionalSlots } from "../availability/computeProfessionalSlots.js";
+import { NotifyNewAppointmentService } from "../notification/NotifyNewAppointmentService.js";
 
 interface CreateAppointmentServiceProps {
     slug: string;
@@ -121,7 +122,7 @@ class CreateAppointmentService {
             ).id;
 
         try {
-            return await prismaClient.$transaction(
+            const created = await prismaClient.$transaction(
                 async (tx) => {
                     // Revalida a disponibilidade DENTRO da transação, nunca confiando no
                     // que o front mostrou — outro agendamento pode ter sido criado entre a
@@ -184,6 +185,23 @@ class CreateAppointmentService {
                 },
                 { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
             );
+
+            // Aviso pro dono/funcionário: novo agendamento entrou. A notificação
+            // (sino do painel) é persistida de forma síncrona — se isso falhar é
+            // erro real; já o push em si, dentro do service, continua best-effort.
+            // (nome diferente de "time" de propósito: um `const time` aqui sombrearia,
+            // por hoisting de bloco, o parâmetro `time` usado ACIMA dentro da
+            // transação, quebrando a checagem de disponibilidade com um TDZ error.)
+            const scheduledTime = getZonedParts(created.scheduledAt, tenant.timezone).time;
+            await new NotifyNewAppointmentService().execute({
+                tenantId: tenant.id,
+                appointmentId: created.id,
+                customerName,
+                serviceName: created.service.name,
+                time: scheduledTime
+            });
+
+            return created;
         } catch (error) {
             // P2034: conflito de escrita detectado pelo Postgres sob serializable —
             // é exatamente a corrida de dois clientes pro mesmo horário.

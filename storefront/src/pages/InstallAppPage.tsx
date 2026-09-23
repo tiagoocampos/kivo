@@ -108,7 +108,7 @@ export function InstallAppPage() {
     setInstalling(true)
     await promptInstall()
     setInstalling(false)
-    navigate(`/${slug}`)
+    navigate(`/${slug}/agendar`)
   }
 
   const { logoUrl } = getStoreBranding(tenant)
@@ -128,7 +128,7 @@ export function InstallAppPage() {
         {alreadyInstalled ? (
           <>
             <p className="text-sm font-medium text-foreground">Você já tem o app instalado! 🎉</p>
-            <Button size="lg" className="w-full" onClick={() => navigate(`/${slug}`)}>
+            <Button size="lg" className="w-full" onClick={() => navigate(`/${slug}/agendar`)}>
               Agendar horário
             </Button>
           </>
@@ -150,7 +150,7 @@ export function InstallAppPage() {
           </div>
         )}
 
-        <Link to={`/${slug}`} className="text-xs text-muted-foreground underline-offset-4 hover:underline">
+        <Link to={`/${slug}/agendar`} className="text-xs text-muted-foreground underline-offset-4 hover:underline">
           Prefiro só agendar pelo navegador
         </Link>
       </div>

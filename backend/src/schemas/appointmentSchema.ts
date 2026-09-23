@@ -9,6 +9,13 @@ export const listAppointmentsSchema =
         })
     })
 
+export const getAppointmentSchema =
+    z.object({
+        params: z.object({
+            id: z.string().uuid({ message: "Agendamento inválido" }),
+        })
+    })
+
 // A rota /status nunca aceita "cancelado" como alvo — cancelamento é sempre
 // pela rota /cancel dedicada (motivo opcional, canceledBy: "store").
 export const updateAppointmentStatusSchema =

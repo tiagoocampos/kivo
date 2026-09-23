@@ -1,6 +1,7 @@
 import { AppointmentCannotBeCanceledError, AppointmentNotFoundError } from "../../errors/appointment/AppointmentErrors.js";
 import prismaClient from "../../prisma/index.js";
 import { canCancelFromStatus } from "../../utils/appointmentStatus.js";
+import { notifyAppointmentCustomer } from "../push/notifyPush.js";
 import { APPOINTMENT_SELECT } from "./appointmentSelect.js";
 
 interface CancelAppointmentByStoreServiceProps {
@@ -33,7 +34,7 @@ class CancelAppointmentByStoreService {
             throw new AppointmentCannotBeCanceledError("Este agendamento não pode mais ser cancelado.");
         }
 
-        return prismaClient.appointment.update({
+        const updated = await prismaClient.appointment.update({
             where: {
                 id: appointment.id
             },
@@ -44,6 +45,15 @@ class CancelAppointmentByStoreService {
             },
             select: APPOINTMENT_SELECT
         });
+
+        await notifyAppointmentCustomer(updated.id, {
+            title: "Agendamento cancelado",
+            body: reason
+                ? `Seu agendamento foi cancelado pela barbearia. Motivo: ${reason}`
+                : "Seu agendamento foi cancelado pela barbearia."
+        });
+
+        return updated;
     }
 }
 
