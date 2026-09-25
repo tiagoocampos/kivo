@@ -83,7 +83,10 @@ export function BookingHeader({ tenant, onOpenMenu, onOpenAppointments }: Bookin
     return (
       <header>
         <div className="relative w-full">
-          <img src={bannerUrl!} alt="" className="h-48 w-full object-cover sm:h-56" />
+          {/* aspect-ratio, não altura fixa: em telas estreitas uma altura fixa
+           * faz o object-cover cortar muito mais dos lados da imagem do que
+           * em telas largas, cortando texto/logo perto da borda do banner. */}
+          <img src={bannerUrl!} alt="" className="aspect-3/1 w-full object-cover" />
           <div className="absolute inset-x-0 top-0">{iconBar}</div>
         </div>
         {infoBar}

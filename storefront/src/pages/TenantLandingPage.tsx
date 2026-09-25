@@ -98,7 +98,11 @@ function TenantLandingContent({ slug }: { slug: string }) {
          * cor permitida na página é a que vier do asset do tenant. */}
         <section className="relative isolate overflow-hidden border-b border-line">
           {bannerUrl ? (
-            <div className="relative h-48 w-full sm:h-56">
+            // aspect-ratio (não altura fixa em px) pra caixa do banner escalar
+            // com a largura da tela: com altura fixa, o object-cover cropava
+            // muito mais dos lados em telas estreitas do que em telas largas,
+            // cortando texto/logo que o lojista desenhou perto da borda da imagem.
+            <div className="relative aspect-3/1 w-full">
               <img src={bannerUrl} alt="" className="size-full object-cover" />
               <div className="absolute inset-0 bg-linear-to-t from-surface via-surface/10 to-transparent" />
             </div>

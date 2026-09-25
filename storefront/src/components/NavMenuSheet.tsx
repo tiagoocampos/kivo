@@ -66,8 +66,11 @@ export function NavMenuSheet({
         className="flex w-full flex-col border-none bg-brand text-brand-foreground sm:max-w-xs"
       >
         {hasBanner ? (
-          <div className="relative w-full border-b border-brand-foreground/10">
-            <img src={bannerUrl!} alt="" className="h-28 w-full object-cover" />
+          <div className="relative w-full overflow-hidden border-b border-brand-foreground/10">
+            {/* aspect-ratio em vez de altura fixa — mesma correção do banner
+             * no header e na landing: evita cortar texto/logo do banner nas
+             * bordas em telas estreitas. */}
+            <img src={bannerUrl!} alt="" className="aspect-3/1 w-full object-cover" />
             <div className="absolute inset-x-0 top-0 bg-linear-to-b from-black/60 to-transparent">{titleRow}</div>
           </div>
         ) : (

@@ -188,4 +188,10 @@
   html {
     @apply font-sans;
     }
+  /* Cinto de segurança contra overflow horizontal (ex: banner do tenant um
+   * pixel maior que a viewport) — não é o conserto de nenhum bug, só evita
+   * que a página inteira role pros lados se algo escapar da largura da tela. */
+  body {
+    overflow-x: hidden;
+    }
 }
