@@ -39,8 +39,8 @@ export function AccountSheet({ open, onOpenChange }: AccountSheetProps) {
 
   const tabClass = (active: boolean) =>
     cn(
-      "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
-      active ? "border-primary bg-accent text-accent-foreground" : "border-border text-foreground hover:bg-muted"
+      "flex-1 rounded-md border px-3 py-2 text-sm transition-colors",
+      active ? "border-2 border-fg font-medium text-fg" : "border-line-strong text-fg-muted hover:bg-tint"
     )
 
   return (

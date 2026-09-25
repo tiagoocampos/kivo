@@ -27,14 +27,14 @@ function Row({
   return (
     <div className="flex items-start justify-between gap-3 text-sm">
       <div className="flex min-w-0 flex-col">
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="font-medium text-foreground">{value}</span>
+        <span className="text-xs text-fg-muted">{label}</span>
+        <span className="font-medium text-fg">{value}</span>
       </div>
       {onEdit && (
         <button
           type="button"
           onClick={() => onEdit(step)}
-          className="shrink-0 text-xs font-medium text-primary underline-offset-4 hover:underline"
+          className="shrink-0 text-xs font-medium text-fg underline-offset-4 hover:underline"
         >
           Alterar
         </button>
@@ -52,7 +52,7 @@ export function BookingReview({ service, professional, date, time, onEdit }: Boo
         : professional.name
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3.5">
+    <div className="flex flex-col gap-3 rounded-md border border-line-strong p-3.5">
       <Row
         label="Serviço"
         value={`${service.name} · ${formatDuration(service.durationMinutes)}`}
@@ -66,8 +66,8 @@ export function BookingReview({ service, professional, date, time, onEdit }: Boo
       <Separator />
 
       <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">Valor</span>
-        <span className="font-semibold text-foreground">{formatCents(service.price)}</span>
+        <span className="text-fg-muted">Valor</span>
+        <span className="font-semibold tabular-nums text-fg">{formatCents(service.price)}</span>
       </div>
     </div>
   )

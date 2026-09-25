@@ -14,68 +14,15 @@ import type { Tenant } from "@/types"
 
 type LoadStatus = "loading" | "ready" | "notFound" | "error"
 
-/** Pente estilizado, desenhado à mão pra combinar com o `Scissors` do lucide
- * (a lib não tem um ícone de pente pronto) e formar o mesmo motivo
- * tesoura+pente da referência. */
-function CombGlyph({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path
-        d="M4 3h11a1 1 0 0 1 1 1v2H4V3Z"
-        fill="currentColor"
-      />
-      {[0, 2, 4, 6, 8, 10].map((offset) => (
-        <rect key={offset} x={4 + offset} y="6" width="1.3" height="15" rx="0.6" fill="currentColor" />
-      ))}
-    </svg>
-  )
-}
-
-function BarberMark() {
-  return (
-    <div className="relative flex h-16 w-20 items-center justify-center">
-      <CombGlyph className="absolute right-1 top-0 h-11 w-11 rotate-18 text-(--landing-foreground)/90" />
-      <Scissors className="absolute left-1 bottom-0 h-10 w-10 -rotate-12 text-(--landing-foreground)" strokeWidth={1.75} />
-    </div>
-  )
-}
-
-/** Ilustração decorativa de navalha, sangrando pela borda direita da capa —
- * equivalente livre da navalha da referência, sem depender de asset externo. */
-function RazorIllustration({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 160 160"
-      fill="none"
-      className={className}
-      aria-hidden="true"
-    >
-      <g transform="rotate(-40 80 80)">
-        {/* lâmina, afinando na ponta */}
-        <path d="M-10 70 L120 70 L146 80 L120 90 L-10 90 Z" fill="url(#razor-blade)" stroke="rgba(0,0,0,0.3)" strokeWidth="1" />
-        {/* dorso/cabo escuro */}
-        <rect x="-40" y="72" width="36" height="16" rx="4" fill="#2a2015" />
-        <rect x="-58" y="75" width="20" height="10" rx="3" fill="#1a1206" />
-      </g>
-      <defs>
-        <linearGradient id="razor-blade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#faf7ef" />
-          <stop offset="1" stopColor="#c9c2b2" />
-        </linearGradient>
-      </defs>
-    </svg>
-  )
-}
-
 function LandingSkeleton() {
   return (
-    <div className="tenant-landing flex min-h-svh flex-col bg-(--landing-bg)">
-      <Skeleton className="h-56 w-full rounded-none bg-white/5" />
-      <div className="flex flex-col items-center gap-4 px-6 pb-10 -mt-12">
-        <Skeleton className="size-24 rounded-full bg-white/10" />
-        <Skeleton className="h-6 w-48 bg-white/10" />
-        <Skeleton className="h-4 w-64 bg-white/10" />
-        <Skeleton className="h-11 w-full max-w-xs bg-white/10" />
+    <div data-tone="dark" className="flex min-h-svh flex-col items-center bg-surface">
+      <div className="flex w-full max-w-md flex-col items-center gap-4 px-6 pt-14 pb-10">
+        <Skeleton className="size-16 rounded-md bg-fg/10" />
+        <Skeleton className="size-24 rounded-full bg-fg/10" />
+        <Skeleton className="h-6 w-48 bg-fg/10" />
+        <Skeleton className="h-4 w-64 bg-fg/10" />
+        <Skeleton className="h-11 w-full max-w-xs bg-fg/10" />
       </div>
     </div>
   )
@@ -139,86 +86,57 @@ function TenantLandingContent({ slug }: { slug: string }) {
     )
   }
 
-  const { logoUrl } = getStoreBranding(tenant)
+  const { logoUrl, bannerUrl } = getStoreBranding(tenant)
   const openStatus = getStoreOpenStatus(tenant.businessHours, tenant.timezone)
   const location = [tenant.address, tenant.city].filter(Boolean).join(", ")
   const instagramUrl = getSafeHttpUrl(tenant.instagramUrl)
 
   return (
-    <div className="tenant-landing flex min-h-svh flex-col items-center bg-(--landing-bg) text-(--landing-foreground)">
+    <div data-tone="dark" className="flex min-h-svh flex-col items-center bg-surface text-fg">
       <div className="w-full max-w-md">
-        {/* Capa: composição tipográfica fixa (não vem do tenant, exceto o nome no topo). */}
-        <section className="relative isolate overflow-hidden bg-(--landing-bg)">
-          <div className="tenant-landing-noise" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_0%,var(--landing-bg-elevated),var(--landing-bg))]" />
-
-          <div className="relative z-10 flex flex-col items-center gap-4 px-6 pt-10 pb-8 text-center">
-            <span className="text-xs font-medium tracking-[0.3em] text-(--landing-foreground)/60 uppercase">
-              {tenant.name}
-            </span>
-
-            <BarberMark />
-
-            <div className="relative flex flex-col items-center">
-              <span className="font-heading text-2xl font-extrabold tracking-tight text-(--landing-accent-strong) uppercase sm:text-3xl">
-                Agende seu
-              </span>
-
-              <div className="relative mt-1">
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 top-3 left-1.5 font-heading text-5xl leading-none font-black tracking-tight text-(--landing-foreground)/10 uppercase select-none sm:text-6xl"
-                >
-                  Horário
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 top-1.5 left-0.5 font-heading text-5xl leading-none font-black tracking-tight text-(--landing-foreground)/20 uppercase select-none sm:text-6xl"
-                >
-                  Horário
-                </span>
-                <h1 className="relative font-heading text-5xl leading-none font-black tracking-tight text-(--landing-foreground) uppercase sm:text-6xl">
-                  Horário
-                </h1>
-              </div>
-
-              <RazorIllustration className="pointer-events-none absolute -right-14 top-1/2 z-20 h-24 w-24 -translate-y-1/2 opacity-95 sm:-right-16 sm:h-28 sm:w-28" />
+        {/* Capa: moldura neutra + o banner/logo da própria barbearia — a única
+         * cor permitida na página é a que vier do asset do tenant. */}
+        <section className="relative isolate overflow-hidden border-b border-line">
+          {bannerUrl ? (
+            <div className="relative h-48 w-full sm:h-56">
+              <img src={bannerUrl} alt="" className="size-full object-cover" />
+              <div className="absolute inset-0 bg-linear-to-t from-surface via-surface/10 to-transparent" />
             </div>
-
-            <Button
-              size="lg"
-              onClick={() => navigate(`/${slug}/agendar`)}
-              className="mt-6 h-12 w-full max-w-xs gap-2 rounded-full bg-(--landing-accent) text-base font-semibold text-(--landing-accent-foreground) hover:bg-(--landing-accent) hover:brightness-110"
-            >
-              <CalendarCheck className="size-5" strokeWidth={2} />
-              Agendar horário
-            </Button>
-          </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 px-6 pt-12 pb-10 text-center">
+              <span className="flex size-14 items-center justify-center rounded-md border border-line-strong">
+                <Scissors className="size-6" strokeWidth={1.5} />
+              </span>
+              <span className="text-[0.6875rem] font-medium tracking-[0.16em] text-fg-muted uppercase">
+                Agendamento online
+              </span>
+              <h1 className="font-heading text-3xl leading-none font-semibold tracking-tight uppercase sm:text-4xl">
+                Agende seu horário
+              </h1>
+            </div>
+          )}
         </section>
 
-        {/* Ficha da barbearia: mesmos dados de sempre, tom mais editorial/calmo
-         * pra não competir com a tipografia pesada da capa acima. */}
+        {/* Ficha da barbearia. */}
         <main className="animate-in fade-in slide-in-from-bottom-3 duration-500 flex flex-col items-center gap-4 px-6 pt-8 pb-10 text-center">
           <TenantAvatar
             logoUrl={logoUrl}
-            className="size-20 border-2 border-(--landing-bg-elevated) shadow-md"
-            fallbackClassName="bg-(--landing-accent) text-(--landing-accent-foreground)"
+            className={bannerUrl ? "-mt-16 size-20 border-2 border-surface shadow-md" : "size-20"}
           />
+
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[0.6875rem] font-medium tracking-[0.16em] text-fg-muted uppercase">
+              {tenant.name}
+            </span>
+            <h2 className="font-heading text-xl font-semibold">{tenant.name}</h2>
+          </div>
 
           <div className="flex flex-col items-center gap-2">
             {openStatus && (
-              <span
-                className={
-                  openStatus.isOpen
-                    ? "inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-400"
-                    : "inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-(--landing-muted)"
-                }
-              >
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-line-strong px-3 py-1 text-xs font-medium">
                 <span
                   className={
-                    openStatus.isOpen
-                      ? "size-1.5 rounded-full bg-emerald-400"
-                      : "size-1.5 rounded-full bg-(--landing-muted)"
+                    openStatus.isOpen ? "size-1.5 rounded-full bg-emerald-500" : "size-1.5 rounded-full bg-fg-faint"
                   }
                 />
                 {openStatus.isOpen ? "Aberto agora" : "Fechado agora"}
@@ -226,12 +144,10 @@ function TenantLandingContent({ slug }: { slug: string }) {
               </span>
             )}
 
-            {tenant.description && (
-              <p className="max-w-sm text-sm text-(--landing-muted)">{tenant.description}</p>
-            )}
+            {tenant.description && <p className="max-w-sm text-sm text-fg-muted">{tenant.description}</p>}
           </div>
 
-          <div className="flex flex-col items-center gap-2 text-sm text-(--landing-muted)">
+          <div className="flex flex-col items-center gap-2 text-sm text-fg-muted">
             {location && (
               <span className="flex items-center gap-2">
                 <MapPin className="size-4 shrink-0" strokeWidth={1.75} />
@@ -240,10 +156,7 @@ function TenantLandingContent({ slug }: { slug: string }) {
             )}
 
             {tenant.phone && (
-              <a
-                href={`tel:${tenant.phone}`}
-                className="flex items-center gap-2 text-(--landing-foreground) hover:text-(--landing-accent)"
-              >
+              <a href={`tel:${tenant.phone}`} className="flex items-center gap-2 text-fg hover:underline">
                 <Phone className="size-4 shrink-0" strokeWidth={1.75} />
                 {tenant.phone}
               </a>
@@ -254,7 +167,7 @@ function TenantLandingContent({ slug }: { slug: string }) {
                 href={instagramUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 text-(--landing-foreground) hover:text-(--landing-accent)"
+                className="flex items-center gap-2 text-fg hover:underline"
               >
                 <AtSign className="size-4 shrink-0" strokeWidth={1.75} />
                 Instagram
@@ -262,9 +175,18 @@ function TenantLandingContent({ slug }: { slug: string }) {
             )}
           </div>
 
+          <Button
+            size="lg"
+            onClick={() => navigate(`/${slug}/agendar`)}
+            className="mt-2 h-12 w-full max-w-xs gap-2 rounded-md bg-fg text-base font-semibold text-surface hover:bg-fg/90"
+          >
+            <CalendarCheck className="size-5" strokeWidth={2} />
+            Agendar horário
+          </Button>
+
           <footer className="mt-4 pt-4">
-            <span className="text-xs text-(--landing-muted)/70">
-              Feito com <span className="font-semibold">KirvoAgenda</span>
+            <span className="text-xs text-fg-faint">
+              Feito com <span className="font-semibold text-fg-muted">KirvoAgenda</span>
             </span>
           </footer>
         </main>

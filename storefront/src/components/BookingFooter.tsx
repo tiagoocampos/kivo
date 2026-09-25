@@ -17,7 +17,7 @@ export function BookingFooter({ tenant }: BookingFooterProps) {
   if (!hasContent) return null
 
   return (
-    <footer className="flex flex-col gap-3 border-t border-border bg-card px-4 py-6 text-sm text-muted-foreground">
+    <footer className="flex flex-col gap-3 border-t border-line bg-surface px-4 py-6 text-sm text-fg-muted">
       {tenant.description && <p>{tenant.description}</p>}
 
       {location && (
@@ -40,7 +40,7 @@ export function BookingFooter({ tenant }: BookingFooterProps) {
           href={instagramUrl}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-2 text-foreground hover:underline"
+          className="flex items-center gap-2 text-fg hover:underline"
         >
           <AtSign className="size-4 shrink-0" strokeWidth={1.75} />
           Instagram

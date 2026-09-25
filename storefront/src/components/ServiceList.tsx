@@ -1,4 +1,5 @@
 import { ServiceCard } from "@/components/ServiceCard"
+import { StepLabel } from "@/components/StepLabel"
 import type { Service } from "@/types"
 
 interface ServiceListProps {
@@ -10,17 +11,14 @@ interface ServiceListProps {
 export function ServiceList({ services, selectedId, onSelect }: ServiceListProps) {
   return (
     <section className="flex flex-col gap-3">
-      <div>
-        <h2 className="font-heading text-base font-semibold text-foreground">Escolha o serviço</h2>
-        <p className="text-sm text-muted-foreground">O que você quer fazer hoje?</p>
-      </div>
+      <StepLabel step={1}>Serviço</StepLabel>
 
       {services.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+        <p className="rounded-md border border-dashed border-line-strong p-6 text-center text-sm text-fg-muted">
           Esta barbearia ainda não cadastrou serviços para agendamento online.
         </p>
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2">
           {services.map((service) => (
             <ServiceCard
               key={service.id}

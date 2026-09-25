@@ -22,9 +22,9 @@ const PERIODS = [
 
 function Notice({ icon, title, children }: { icon: React.ReactNode; title: string; children?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border p-6 text-center">
-      <span className="text-muted-foreground">{icon}</span>
-      <p className="text-sm font-medium text-foreground">{title}</p>
+    <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-line-strong p-6 text-center">
+      <span className="text-fg-muted">{icon}</span>
+      <p className="text-sm font-medium text-fg">{title}</p>
       {children}
     </div>
   )
@@ -33,14 +33,14 @@ function Notice({ icon, title, children }: { icon: React.ReactNode; title: strin
 export function TimeSlotPicker({ date, state, selectedTime, contactPhone, onSelect, onRetry }: TimeSlotPickerProps) {
   const content = (() => {
     if (!date || state.status === "idle") {
-      return <p className="text-sm text-muted-foreground">Escolha um dia para ver os horários livres.</p>
+      return <p className="text-sm text-fg-muted">Escolha um dia para ver os horários livres.</p>
     }
 
     if (state.status === "loading") {
       return (
-        <div className="grid grid-cols-4 gap-2" aria-busy="true" aria-label="Carregando horários">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <Skeleton key={index} className="h-10 rounded-lg" />
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4" aria-busy="true" aria-label="Carregando horários">
+          {Array.from({ length: 9 }).map((_, index) => (
+            <Skeleton key={index} className="h-10 rounded-md" />
           ))}
         </div>
       )
@@ -50,7 +50,7 @@ export function TimeSlotPicker({ date, state, selectedTime, contactPhone, onSele
     if (state.status === "unavailable") {
       return (
         <Notice icon={<CalendarX className="size-6" />} title="Horários ainda não disponíveis para agendamento online">
-          <p className="text-xs text-muted-foreground">Fale com a barbearia para marcar o seu horário.</p>
+          <p className="text-xs text-fg-muted">Fale com a barbearia para marcar o seu horário.</p>
           {contactPhone && (
             <Button asChild variant="outline" size="sm">
               <a href={`tel:${contactPhone}`}>
@@ -65,7 +65,7 @@ export function TimeSlotPicker({ date, state, selectedTime, contactPhone, onSele
     if (state.status === "error") {
       return (
         <Notice icon={<RefreshCw className="size-6" />} title="Não foi possível carregar os horários">
-          <p className="text-xs text-muted-foreground">Verifique sua conexão e tente de novo.</p>
+          <p className="text-xs text-fg-muted">Verifique sua conexão e tente de novo.</p>
           <Button type="button" variant="outline" size="sm" onClick={onRetry}>
             <RefreshCw /> Tentar novamente
           </Button>
@@ -76,7 +76,7 @@ export function TimeSlotPicker({ date, state, selectedTime, contactPhone, onSele
     if (state.slots.length === 0) {
       return (
         <Notice icon={<CalendarX className="size-6" />} title="Sem horários livres neste dia">
-          <p className="text-xs text-muted-foreground">Tente outro dia ou outro profissional.</p>
+          <p className="text-xs text-fg-muted">Tente outro dia ou outro profissional.</p>
         </Notice>
       )
     }
@@ -89,8 +89,8 @@ export function TimeSlotPicker({ date, state, selectedTime, contactPhone, onSele
 
           return (
             <div key={period.label} className="flex flex-col gap-2">
-              <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{period.label}</h3>
-              <div className="grid grid-cols-4 gap-2">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-fg-muted">{period.label}</h3>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {slots.map((slot) => {
                   const selected = slot === selectedTime
 
@@ -101,10 +101,10 @@ export function TimeSlotPicker({ date, state, selectedTime, contactPhone, onSele
                       onClick={() => onSelect(slot)}
                       aria-pressed={selected}
                       className={cn(
-                        "rounded-lg border py-2.5 text-sm font-medium transition-colors",
+                        "rounded-md border py-2.5 text-sm tabular-nums transition-colors",
                         selected
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-card text-foreground hover:bg-muted"
+                          ? "border-fg bg-fg font-semibold text-surface"
+                          : "border-line-strong text-fg hover:bg-tint"
                       )}
                     >
                       {slot}
@@ -121,11 +121,7 @@ export function TimeSlotPicker({ date, state, selectedTime, contactPhone, onSele
 
   return (
     <section className="flex flex-col gap-3">
-      <div>
-        <h2 className="font-heading text-base font-semibold text-foreground">Escolha o horário</h2>
-        {date && <p className="text-sm text-muted-foreground">{formatShortDate(date)}</p>}
-      </div>
-
+      {date && <p className="text-sm text-fg-muted">{formatShortDate(date)}</p>}
       {content}
     </section>
   )

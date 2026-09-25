@@ -11,6 +11,7 @@ import { BookingConfirmForm, type BookingConfirmValues } from "@/components/Book
 import { BookingSummaryBar } from "@/components/BookingSummaryBar"
 import { BookingSummarySheet } from "@/components/BookingSummarySheet"
 import { ServiceList } from "@/components/ServiceList"
+import { StepLabel } from "@/components/StepLabel"
 import { ProfessionalPicker } from "@/components/ProfessionalPicker"
 import { DatePicker } from "@/components/DatePicker"
 import { TimeSlotPicker } from "@/components/TimeSlotPicker"
@@ -268,8 +269,10 @@ function BookingContent({ slug }: { slug: string }) {
         {step === "confirm" && service && (
           <section className="flex flex-col gap-4">
             <div>
-              <h2 className="font-heading text-base font-semibold text-foreground">Confirme seu agendamento</h2>
-              <p className="text-sm text-muted-foreground">Revise e informe seus dados.</p>
+              <StepLabel step={4} className="mb-1">
+                Confirmar
+              </StepLabel>
+              <p className="text-sm text-fg-muted">Revise e informe seus dados.</p>
             </div>
 
             <BookingReview

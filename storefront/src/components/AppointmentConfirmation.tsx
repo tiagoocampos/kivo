@@ -29,28 +29,35 @@ export function AppointmentConfirmation({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-3">
-      <div className="flex flex-col items-center gap-1.5 pt-4 text-center">
-        <CheckCircle2 className="size-9 text-primary" />
-        <h1 className="font-heading text-lg font-semibold text-foreground">Agendamento realizado!</h1>
-        <p className="text-sm text-muted-foreground">{tenant.name} já recebeu o seu horário.</p>
+      <div
+        data-tone="light"
+        className="flex items-center gap-3 rounded-md border border-fg bg-surface px-4 py-3.5 text-fg shadow-[0_18px_40px_-20px_rgba(10,10,10,0.5)]"
+      >
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-fg text-surface">
+          <CheckCircle2 className="size-5" />
+        </span>
+        <div>
+          <p className="text-sm leading-tight font-semibold">Agendamento confirmado</p>
+          <p className="text-xs text-fg-muted">{tenant.name} já recebeu o seu horário.</p>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-xl border border-border p-3.5 text-sm">
+      <div className="flex flex-col gap-3 rounded-md border border-line-strong p-3.5 text-sm">
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">Serviço</span>
-          <span className="font-medium text-foreground">
+          <span className="text-xs text-fg-muted">Serviço</span>
+          <span className="font-medium text-fg">
             {appointment.service.name} · {formatDuration(appointment.service.durationMinutes)}
           </span>
         </div>
 
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">Profissional</span>
-          <span className="font-medium text-foreground">{appointment.professional.name}</span>
+          <span className="text-xs text-fg-muted">Profissional</span>
+          <span className="font-medium text-fg">{appointment.professional.name}</span>
         </div>
 
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">Quando</span>
-          <span className="font-medium text-foreground first-letter:uppercase">
+          <span className="text-xs text-fg-muted">Quando</span>
+          <span className="font-medium text-fg first-letter:uppercase tabular-nums">
             {formatLongDate(date)} às {time}
           </span>
         </div>
@@ -58,12 +65,12 @@ export function AppointmentConfirmation({
         <Separator />
 
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Valor</span>
-          <span className="font-semibold text-foreground">{formatCents(appointment.price)}</span>
+          <span className="text-fg-muted">Valor</span>
+          <span className="font-semibold tabular-nums text-fg">{formatCents(appointment.price)}</span>
         </div>
       </div>
 
-      <p className="rounded-xl bg-muted p-3 text-xs text-muted-foreground">
+      <p className="rounded-md bg-tint p-3 text-xs text-fg-muted">
         {getCancellationPolicyText(isAuthenticated)}
       </p>
 

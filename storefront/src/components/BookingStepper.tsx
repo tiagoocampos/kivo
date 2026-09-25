@@ -30,10 +30,10 @@ export function BookingStepper({ current, isStepComplete, onSelect }: BookingSte
           <>
             <span
               className={cn(
-                "flex size-6 items-center justify-center rounded-full border text-xs font-semibold transition-colors",
-                isCurrent && "border-primary bg-primary text-primary-foreground",
-                done && "border-primary bg-accent text-accent-foreground",
-                !isCurrent && !done && "border-border text-muted-foreground"
+                "flex size-6 items-center justify-center rounded-full border text-xs font-semibold tabular-nums transition-colors",
+                isCurrent && "border-fg bg-fg text-surface",
+                done && "border-fg bg-tint text-fg",
+                !isCurrent && !done && "border-line-strong text-fg-muted"
               )}
             >
               {done ? <Check className="size-3.5" /> : index + 1}
@@ -41,7 +41,7 @@ export function BookingStepper({ current, isStepComplete, onSelect }: BookingSte
             <span
               className={cn(
                 "text-[11px] leading-tight",
-                isCurrent ? "font-semibold text-foreground" : "text-muted-foreground"
+                isCurrent ? "font-semibold text-fg" : "text-fg-muted"
               )}
             >
               {STEP_LABELS[step]}

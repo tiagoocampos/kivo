@@ -6,11 +6,135 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Paleta monocromática do storefront: só preto e branco, hierarquia por
+ * opacidade — mesmo sistema de tokens da landing institucional do KirvoAgenda
+ * (kirvo-landingpage/src/app/globals.css), portado aqui pra manter os dois
+ * projetos consistentes. `--color-ink`/`--color-bg` são os dois únicos tons
+ * "puros"; tudo o mais (superfície, texto, bordas) deriva deles por tom.
+ */
+@theme static {
+    --color-ink: #0a0a0a;
+    --color-bg: #ffffff;
+
+    --color-ink-60: rgba(10, 10, 10, 0.6);
+    --color-ink-40: rgba(10, 10, 10, 0.4);
+    --color-ink-20: rgba(10, 10, 10, 0.2);
+    --color-ink-10: rgba(10, 10, 10, 0.1);
+    --color-ink-05: rgba(10, 10, 10, 0.05);
+
+    --color-paper-60: rgba(255, 255, 255, 0.6);
+    --color-paper-40: rgba(255, 255, 255, 0.4);
+    --color-paper-20: rgba(255, 255, 255, 0.2);
+    --color-paper-15: rgba(255, 255, 255, 0.15);
+    --color-paper-08: rgba(255, 255, 255, 0.08);
+
+    /* Um único raio em todo o app (cards, botões, inputs, sheets). */
+    --radius: 0.375rem;
+}
+
+/*
+ * Tokens semânticos por "tom": bg-surface / text-fg / text-fg-muted /
+ * text-fg-faint / border-line / border-line-strong / bg-tint. Um elemento
+ * troca de tom só com data-tone="dark" | "light" — sem isso, o tom padrão é
+ * o claro, e a classe `.dark` (alternada pelo ThemeToggle) vira o tom escuro
+ * pro app inteiro. Um data-tone explícito (ex: o card de agendamento ou o
+ * toast de confirmação) sempre vence sobre o tema global, porque a regra
+ * mais próxima do elemento tem prioridade na cascata de custom properties.
+ */
+:root,
+[data-tone="light"] {
+    --surface: var(--color-bg);
+    --fg: var(--color-ink);
+    --fg-muted: var(--color-ink-60);
+    --fg-faint: var(--color-ink-40);
+    --line: var(--color-ink-10);
+    --line-strong: var(--color-ink-20);
+    --tint: var(--color-ink-05);
+}
+
+[data-tone="dark"],
+.dark {
+    --surface: var(--color-ink);
+    --fg: var(--color-bg);
+    --fg-muted: var(--color-paper-60);
+    --fg-faint: var(--color-paper-40);
+    --line: var(--color-paper-15);
+    --line-strong: var(--color-paper-20);
+    --tint: var(--color-paper-08);
+}
+
+/*
+ * Paleta padrão do KirvoAgenda, agora monocromática: o que muda de marca é
+ * --brand (barra do topo do agendamento e menu) — sempre escuro, com ou sem
+ * tema claro/escuro ativo, igual à barra de navegação da referência.
+ */
+:root {
+    --brand: var(--color-ink);
+    --brand-foreground: var(--color-bg);
+    --sidebar: var(--color-bg);
+    --sidebar-foreground: var(--color-ink);
+    --sidebar-primary: var(--color-ink);
+    --sidebar-primary-foreground: var(--color-bg);
+    --sidebar-accent: var(--color-ink-05);
+    --sidebar-accent-foreground: var(--color-ink);
+    --sidebar-border: var(--color-ink-10);
+    --sidebar-ring: var(--color-ink);
+    --chart-1: var(--color-ink);
+    --chart-2: var(--color-ink-60);
+    --chart-3: var(--color-ink-40);
+    --chart-4: var(--color-ink-20);
+    --chart-5: var(--color-ink-10);
+}
+
+/* Mapeamento dos tokens do shadcn pros tokens de tom acima — reavaliado em
+ * cada elemento de tom (mesma técnica da landing institucional). Cores de
+ * estado (destrutivo) continuam vermelhas: são semânticas (erro/cancelamento),
+ * não um accent de marca, então ficam fora da regra "só neutro". */
+:root,
+[data-tone] {
+    --background: var(--surface);
+    --foreground: var(--fg);
+    --card: var(--surface);
+    --card-foreground: var(--fg);
+    --popover: var(--surface);
+    --popover-foreground: var(--fg);
+    --primary: var(--fg);
+    --primary-foreground: var(--surface);
+    --secondary: var(--tint);
+    --secondary-foreground: var(--fg);
+    --muted: var(--tint);
+    --muted-foreground: var(--fg-muted);
+    --accent: var(--tint);
+    --accent-foreground: var(--fg);
+    --border: var(--line);
+    --input: var(--line-strong);
+    --ring: var(--fg);
+}
+
+:root {
+    --destructive: oklch(0.577 0.245 27.325);
+}
+
+.dark {
+    --destructive: oklch(0.704 0.191 22.216);
+}
+
 @theme inline {
     --font-heading: 'Plus Jakarta Sans Variable', var(--font-sans);
     --font-sans: 'Inter Variable', sans-serif;
+
     --color-brand: var(--brand);
     --color-brand-foreground: var(--brand-foreground);
+
+    --color-surface: var(--surface);
+    --color-fg: var(--fg);
+    --color-fg-muted: var(--fg-muted);
+    --color-fg-faint: var(--fg-faint);
+    --color-line: var(--line);
+    --color-line-strong: var(--line-strong);
+    --color-tint: var(--tint);
+
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -42,92 +166,16 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+
+    /* Raio único (rounded-md) reaplicado em toda a escala — nenhum componente
+     * deste app deve variar de raio, então todo `rounded-*` cai no mesmo valor. */
     --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
+    --radius-md: var(--radius);
     --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-/*
- * Paleta padrão do KirvoAgenda: tons de cinza-azulado + um accent neutro. Cada
- * barbearia pode sobrescrever estas variáveis (ex: via style no <html>) sem tocar
- * em nenhum componente — o que muda de marca é --brand (barra do topo e menu) e
- * --primary (botões, destaques). Ao trocar --brand, atualizar também lib/theme.ts.
- */
-:root {
-    --background: #ffffff;
-    --foreground: #0f172a;
-    --card: #ffffff;
-    --card-foreground: #0f172a;
-    --popover: #ffffff;
-    --popover-foreground: #0f172a;
-    --primary: #334155;
-    --primary-foreground: #ffffff;
-    --secondary: #f8fafc;
-    --secondary-foreground: #0f172a;
-    --muted: #f1f5f9;
-    --muted-foreground: #56657a;
-    --accent: #e2e8f0;
-    --accent-foreground: #0f172a;
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: #e2e8f0;
-    --input: #e2e8f0;
-    --ring: rgba(51, 65, 85, 0.5);
-    --chart-1: #334155;
-    --chart-2: #64748b;
-    --chart-3: #0f172a;
-    --chart-4: #94a3b8;
-    --chart-5: #475569;
-    --radius: 0.55rem;
-    --brand: #0f172a;
-    --brand-foreground: #ffffff;
-    --sidebar: #ffffff;
-    --sidebar-foreground: #0f172a;
-    --sidebar-primary: #334155;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #e2e8f0;
-    --sidebar-accent-foreground: #0f172a;
-    --sidebar-border: #e2e8f0;
-    --sidebar-ring: rgba(51, 65, 85, 0.5);
-}
-
-.dark {
-    --background: #0b1120;
-    --foreground: #e8edf5;
-    --card: #111a2e;
-    --card-foreground: #e8edf5;
-    --popover: #111a2e;
-    --popover-foreground: #e8edf5;
-    --primary: #cbd5e1;
-    --primary-foreground: #0f172a;
-    --secondary: #172033;
-    --secondary-foreground: #e8edf5;
-    --muted: #172033;
-    --muted-foreground: #94a3b8;
-    --accent: #1e293b;
-    --accent-foreground: #e2e8f0;
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: rgba(255, 255, 255, 0.1);
-    --input: rgba(255, 255, 255, 0.15);
-    --ring: rgba(203, 213, 225, 0.5);
-    --chart-1: #cbd5e1;
-    --chart-2: #94a3b8;
-    --chart-3: #e2e8f0;
-    --chart-4: #64748b;
-    --chart-5: #475569;
-    --brand: #0f172a;
-    --brand-foreground: #ffffff;
-    --sidebar: #111a2e;
-    --sidebar-foreground: #e8edf5;
-    --sidebar-primary: #cbd5e1;
-    --sidebar-primary-foreground: #0f172a;
-    --sidebar-accent: #1e293b;
-    --sidebar-accent-foreground: #e2e8f0;
-    --sidebar-border: rgba(255, 255, 255, 0.1);
-    --sidebar-ring: rgba(203, 213, 225, 0.5);
+    --radius-xl: var(--radius);
+    --radius-2xl: var(--radius);
+    --radius-3xl: var(--radius);
+    --radius-4xl: var(--radius);
 }
 
 @layer base {
@@ -140,36 +188,4 @@
   html {
     @apply font-sans;
     }
-}
-
-/*
- * Paleta da landing pública de cada barbearia (/:slug) — proposital e
- * diferente do tema institucional do KirvoAgenda acima: base escura/editorial
- * (moldura neutra pra qualquer logo/banner que a barbearia suba) + um accent
- * âmbar próprio, usado só dentro do escopo .tenant-landing.
- */
-.tenant-landing {
-  --landing-bg: #17130f;
-  --landing-bg-elevated: #221b14;
-  --landing-foreground: #f6f1e8;
-  --landing-muted: #b7ab9a;
-  --landing-accent: #d99a2b;
-  --landing-accent-foreground: #1a1206;
-  /* Amber mais forte, só pro título de destaque ("AGENDE SEU") — o accent
-   * padrão fica claro demais sobre o fundo escuro texturizado da capa. */
-  --landing-accent-strong: #e08a1f;
-  /* Textura de ruído sutil (SVG de fractalNoise), usada como background-image
-   * pra tirar o preto chapado da capa sem precisar de um asset de imagem. */
-  --landing-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-.tenant-landing-noise {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: var(--landing-noise);
-  background-size: 180px 180px;
-  opacity: 0.22;
-  mix-blend-mode: overlay;
 }

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { StepLabel } from "@/components/StepLabel"
 import { cn } from "@/lib/utils"
 import {
   addDays,
@@ -37,8 +38,10 @@ export function DatePicker({ timezone, value, onChange }: DatePickerProps) {
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-heading text-base font-semibold text-foreground">Escolha o dia</h2>
-          <p className="text-sm text-muted-foreground">
+          <StepLabel step={3} className="mb-1">
+            Data e hora
+          </StepLabel>
+          <p className="text-sm text-fg-muted">
             {formatDayMonth(days[0]!)} – {formatDayMonth(days[DAYS_PER_PAGE - 1]!)}
           </p>
         </div>
@@ -78,16 +81,14 @@ export function DatePicker({ timezone, value, onChange }: DatePickerProps) {
               aria-pressed={selected}
               aria-label={formatLongDate(day)}
               className={cn(
-                "flex flex-col items-center gap-0.5 rounded-lg border px-1 py-2 transition-colors",
-                selected
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-foreground hover:bg-muted"
+                "flex flex-col items-center gap-0.5 rounded-md border px-1 py-2 transition-colors",
+                selected ? "border-2 border-fg font-medium" : "border-line-strong text-fg-muted hover:bg-tint"
               )}
             >
-              <span className={cn("text-[11px] capitalize", selected ? "opacity-90" : "text-muted-foreground")}>
+              <span className={cn("text-[11px] capitalize", selected ? "opacity-90" : "text-fg-muted")}>
                 {formatWeekdayInitials(day)}
               </span>
-              <span className="text-base font-semibold leading-none">{dayOfMonth(day)}</span>
+              <span className="text-base leading-none tabular-nums text-fg">{dayOfMonth(day)}</span>
               <span className={cn("text-[9px] leading-none", day === today ? "font-medium" : "invisible")}>Hoje</span>
             </button>
           )

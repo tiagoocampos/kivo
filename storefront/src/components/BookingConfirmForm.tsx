@@ -47,13 +47,13 @@ export function BookingConfirmForm({ customer, onSubmit, onOpenAccount }: Bookin
 
     return (
       <form id="booking-confirm-form" onSubmit={submitAsCustomer} className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1.5 rounded-xl border border-border p-3">
-          <span className="text-xs text-muted-foreground">Agendando como</span>
-          <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <User className="size-4 text-muted-foreground" />
+        <div className="flex flex-col gap-1.5 rounded-md border border-line-strong p-3">
+          <span className="text-xs text-fg-muted">Agendando como</span>
+          <span className="flex items-center gap-2 text-sm font-medium text-fg">
+            <User className="size-4 text-fg-muted" />
             {customer.name}
           </span>
-          <span className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="flex items-center gap-2 text-sm text-fg-muted">
             <Phone className="size-4" />
             {formatPhoneInput(customer.phone)}
           </span>
@@ -91,7 +91,7 @@ export function BookingConfirmForm({ customer, onSubmit, onOpenAccount }: Bookin
         {errors.customerPhone && <span className="text-xs text-destructive">{errors.customerPhone.message}</span>}
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-fg-muted">
         Quer acompanhar e cancelar seus agendamentos?{" "}
         <Button type="button" variant="link" className="h-auto p-0 text-xs" onClick={onOpenAccount}>
           Entre ou crie uma conta
